@@ -2,10 +2,10 @@ using UnityEngine;
 
 public class EnterPoint : MonoBehaviour
 {
-    [SerializeField] private Spawner _spawner;
+    [SerializeField] private CubeSpawnProcess _spawnProcess;
 
     private void Start()
     {
-        _spawner.StartSpawn();
+        _spawnProcess.Execute();
     }
 }

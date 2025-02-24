@@ -3,31 +3,24 @@ using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody), typeof(MeshRenderer))]
-public class Cube : MonoBehaviour, IHittable, IPoolable
+public class Cube : MonoBehaviour, IHittable, IPoolable, IExploisionTarget
 {
-    private MeshRenderer _mesh;
+    [SerializeField] private Color _defaultColor;
+
+    private Material _material;
     private bool isHit = false;
     private Coroutine _deadCoroutine;
 
-    private Color _defaultColor;
-    private bool _isInited = false;
-
     public event Action<IPoolable> Dead;
+
+    public Vector3 Position => transform.position;
+    public Rigidbody Rigidbody { get; private set; }
 
     private void Awake()
     {
-        _mesh = GetComponent<MeshRenderer>();
-    }
+        _material = GetComponent<MeshRenderer>().material;
+        Rigidbody = GetComponent<Rigidbody>();
 
-    public void Init(Color defaultColor)
-    {
-        if (_isInited)
-        {
-            return;
-        }
-
-        _isInited = true;
-        _defaultColor = defaultColor;
         ChangeColor(_defaultColor);
     }
 
@@ -38,11 +31,6 @@ public class Cube : MonoBehaviour, IHittable, IPoolable
             return;
         }
 
-        if (_isInited == false)
-        {
-            Debug.LogError("Cube doesn't inited");
-        }
-
         isHit = true;
         ChangeColor(color);
 
@@ -51,17 +39,17 @@ public class Cube : MonoBehaviour, IHittable, IPoolable
 
     public void ChangeColor(Color color)
     {
-        _mesh.material.color = color;
+        _material.color = color;
     }
 
     public void Activate()
     {
-        if (_isInited == false)
-        {
-            Debug.LogError("Cube doesn't inited");
-        }
-
         gameObject.SetActive(true);
+
+        if (_deadCoroutine != null)
+        {
+            StopCoroutine(_deadCoroutine);
+        }
 
         ChangeColor(_defaultColor);
     }

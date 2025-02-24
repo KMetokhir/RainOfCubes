@@ -5,6 +5,8 @@ public interface IPoolable
 {
     public event Action<IPoolable> Dead;
 
+    public Vector3 Position { get; }
+
     public void Activate();
 
     public void Deactivate();
