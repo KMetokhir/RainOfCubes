@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class Platform : MonoBehaviour
@@ -7,15 +8,22 @@ public class Platform : MonoBehaviour
 
     private void OnValidate()
     {
-        _deathTimeRange.x = Mathf.Abs(_deathTimeRange.x);
-        _deathTimeRange.y = Mathf.Abs(_deathTimeRange.y);
+        if (_deathTimeRange.x < _deathTimeRange.y)
+        {
+            _deathTimeRange.x = Mathf.Abs(_deathTimeRange.x);
+            _deathTimeRange.y = Mathf.Abs(_deathTimeRange.y);
+        }
+        else
+        {
+            throw new Exception("Incorrect DeathTimeRange");
+        }
     }
 
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.transform.TryGetComponent(out IHittable hittable))
         {
-            int deathTime = Random.Range(_deathTimeRange.x, _deathTimeRange.y);
+            int deathTime = UnityEngine.Random.Range(_deathTimeRange.x, _deathTimeRange.y);
             hittable.Hit(_newCollisionObjectColor, deathTime);
         }
     }

@@ -45,6 +45,29 @@ public class Spawner<T> : MonoBehaviour
         return poolableObject;
     }
 
+    protected virtual void OnReleaseToPool(T poolableObject)
+    {
+        poolableObject.Dead -= OnObjectDead;
+        poolableObject.Deactivate();
+
+        ObjectActiveStatusChanged?.Invoke((uint)_pool.CountActive);
+    }
+
+    protected virtual void OnGetFromPool(T poolableObject)
+    {
+        poolableObject.Dead += OnObjectDead;
+        poolableObject.Activate();
+
+        uint activeObjects = (uint)_pool.CountActive;
+        ObjectActiveStatusChanged?.Invoke(activeObjects);
+    }
+
+    protected virtual void OnDestroyPooledObject(T poolableObject)
+    {
+        poolableObject.Dead -= OnObjectDead;
+        poolableObject.Destroy();
+    }
+
     private T Create()
     {
         MonoBehaviour entity = Instantiate(_prefab as MonoBehaviour);
@@ -60,28 +83,5 @@ public class Spawner<T> : MonoBehaviour
     {
         T genericObject = poolableObject as T;
         _pool.Release(genericObject);
-    }
-
-    private void OnReleaseToPool(T poolableObject)
-    {
-        poolableObject.Dead -= OnObjectDead;
-        poolableObject.Deactivate();
-
-        ObjectActiveStatusChanged?.Invoke((uint)_pool.CountActive);
-    }
-
-    private void OnGetFromPool(T poolableObject)
-    {
-        poolableObject.Dead += OnObjectDead;
-        poolableObject.Activate();
-
-        uint activeObjects = (uint)_pool.CountActive;
-        ObjectActiveStatusChanged?.Invoke(activeObjects);
-    }
-
-    private void OnDestroyPooledObject(T poolableObject)
-    {
-        poolableObject.Dead -= OnObjectDead;
-        poolableObject.Destroy();
     }
 }

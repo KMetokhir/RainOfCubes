@@ -8,7 +8,7 @@ public class Cube : MonoBehaviour, IHittable, IPoolable, IExploisionTarget
     [SerializeField] private Color _defaultColor;
 
     private Material _material;
-    private bool isHit = false;
+    private bool _isHit = false;
     private Coroutine _deadCoroutine;
 
     public event Action<IPoolable> Dead;
@@ -26,12 +26,12 @@ public class Cube : MonoBehaviour, IHittable, IPoolable, IExploisionTarget
 
     public void Hit(Color color, int deathTime)
     {
-        if (isHit)
+        if (_isHit)
         {
             return;
         }
 
-        isHit = true;
+        _isHit = true;
         ChangeColor(color);
 
         _deadCoroutine = StartCoroutine(DelayedDeath(deathTime));
@@ -66,7 +66,7 @@ public class Cube : MonoBehaviour, IHittable, IPoolable, IExploisionTarget
 
     public void Deactivate()
     {
-        isHit = false;
+        _isHit = false;
         StopCoroutine(_deadCoroutine);
 
         gameObject.SetActive(false);

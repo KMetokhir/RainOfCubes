@@ -19,6 +19,7 @@ public class Bomb : MonoBehaviour, IPoolable, IExploisionTarget
     private MeshRenderer _renderer;
 
     public event System.Action<IPoolable> Dead;
+    private event System.Action _corutineComplete;
 
     public Vector3 Position => transform.position;
     public Rigidbody Rigidbody { get; private set; }
@@ -35,6 +36,8 @@ public class Bomb : MonoBehaviour, IPoolable, IExploisionTarget
 
     private void OnDisable()
     {
+        _corutineComplete -= OnCorutineComplete;
+
         if (_alphaCanalCoroutine != null)
         {
             StopCoroutine(_alphaCanalCoroutine);
@@ -46,6 +49,8 @@ public class Bomb : MonoBehaviour, IPoolable, IExploisionTarget
         gameObject.SetActive(true);
 
         SetRandomDetonationTime((int)_lowerDetonationLimit, (int)_upperDetonationLimit);
+
+        _corutineComplete += OnCorutineComplete;
 
         if (_alphaCanalCoroutine != null)
         {
@@ -59,6 +64,7 @@ public class Bomb : MonoBehaviour, IPoolable, IExploisionTarget
 
     public void Deactivate()
     {
+        _corutineComplete -= OnCorutineComplete;
         gameObject.SetActive(false);
     }
 
@@ -75,6 +81,17 @@ public class Bomb : MonoBehaviour, IPoolable, IExploisionTarget
     public void ChangeColor(Color color)
     {
         _material.color = color;
+    }
+
+    private void OnCorutineComplete()
+    {
+        float alphaInvisibeValue = 0;
+
+        if (Mathf.Approximately(_material.color.a, alphaInvisibeValue))
+        {
+            Explode();
+            Dead?.Invoke(this);
+        }
     }
 
     private void ChangeRenderMode(float value)
@@ -128,7 +145,7 @@ public class Bomb : MonoBehaviour, IPoolable, IExploisionTarget
         Color startColor = _material.color;
         Color targetColor = new Vector4(_material.color.r, _material.color.b, _material.color.g, alphaValue);
 
-        while (_material.color.a != alphaValue)
+        while (Mathf.Approximately(_material.color.a, alphaValue) == false)
         {
             time += Time.deltaTime / _detonationTime;
 
@@ -137,7 +154,6 @@ public class Bomb : MonoBehaviour, IPoolable, IExploisionTarget
             yield return null;
         }
 
-        Explode();
-        Dead?.Invoke(this);
+        _corutineComplete?.Invoke();
     }
 }
